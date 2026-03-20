@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rustc --version)",
+      "Bash(cargo --version)",
+      "Bash(cargo init:*)",
+      "Read(//Users/sergey/.cargo/bin/**)",
+      "Read(//Users/sergey/.rustup/**)",
+      "Bash(~/.cargo/bin/cargo init:*)",
+      "Bash(~/.cargo/bin/cargo test:*)",
+      "Bash(~/.cargo/bin/cargo run:*)"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+[package]
+name = "pi-clock"
+version = "0.1.0"
+edition = "2026"
+description = "Terminal clock that displays time as π fractions"
+license = "MIT"
+repository = "https://github.com/rudolf1517/pi-clock"
+readme = "README.md"
+keywords = ["clock", "pi", "math", "terminal"]
+
+[dependencies]
