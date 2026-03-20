@@ -1,11 +1,28 @@
 [package]
 name = "pi-clock"
 version = "0.1.0"
-edition = "2026"
+edition = "2024"
 description = "Terminal clock that displays time as π fractions"
 license = "MIT"
 repository = "https://github.com/rudolf1517/pi-clock"
 readme = "README.md"
 keywords = ["clock", "pi", "math", "terminal"]
 
+[lib]
+name = "pi_clock"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pi-clock"
+path = "src/main.rs"
+
+[[bin]]
+name = "tray"
+path = "src/bin/tray.rs"
+
 [dependencies]
+eframe = { version = "0.30", default-features = false, features = [
+    "default_fonts",
+    "glow",
+] }
+tray-icon = "0.19"
