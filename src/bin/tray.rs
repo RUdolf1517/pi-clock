@@ -6,7 +6,9 @@
 // Windows: показывает иконку в трее, π-время в тултипе.
 // Клик по иконке открывает всплывающее окно с обоими типами часов.
 
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+#[cfg(target_family = "unix")]
+use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 use eframe::egui;
 use tray_icon::{TrayIcon, TrayIconBuilder, TrayIconEvent};
 use pi_clock::{clock, display};
