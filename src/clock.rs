@@ -41,6 +41,26 @@ pub fn nearest_minute_position(minute: u32) -> usize {
     ((minute as f64 / 5.0).round() as usize) % 12
 }
 
+/// Возвращает π-дробь только для секунд: second * π/21600
+/// (1 минута = π/360, 1 секунда = π/21600)
+pub fn second_to_pi_fraction(second: u32) -> Fraction {
+    Fraction::new(second as i64, 21600)
+}
+
+/// Переводит часы, минуты и секунды в полный коэффициент при π.
+pub fn full_time_to_pi_fraction(hour: u32, minute: u32, second: u32) -> Fraction {
+    let hour_frac = Fraction::new(hour as i64, 6);
+    let min_frac = Fraction::new(minute as i64, 360);
+    let sec_frac = Fraction::new(second as i64, 21600);
+    hour_frac.add(min_frac).add(sec_frac)
+}
+
+/// Определяет ближайшую из 12 позиций на циферблате (0..11) для секундной стрелки.
+/// Каждая позиция соответствует 5 секундам (60 секунд / 12 позиций).
+pub fn nearest_second_position(second: u32) -> usize {
+    ((second as f64 / 5.0).round() as usize) % 12
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -16,7 +16,7 @@ use pi_clock::{clock, display};
 // ─── Получение локального времени ────────────────────────────────────────────
 
 #[cfg(target_family = "unix")]
-fn get_local_time() -> (u32, u32) {
+fn get_local_time() -> (u32, u32, u32) {
     let secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
@@ -40,12 +40,12 @@ fn get_local_time() -> (u32, u32) {
         let r = localtime_r(&secs, tm.as_mut_ptr());
         assert!(!r.is_null());
         let tm = tm.assume_init();
-        (tm.tm_hour as u32, tm.tm_min as u32)
+        (tm.tm_hour as u32, tm.tm_min as u32, tm.tm_sec as u32)
     }
 }
 
 #[cfg(target_os = "windows")]
-fn get_local_time() -> (u32, u32) {
+fn get_local_time() -> (u32, u32, u32) {
     #[repr(C)]
     struct SYSTEMTIME {
         w_year: u16, w_month: u16, w_day_of_week: u16, w_day: u16,
@@ -60,7 +60,7 @@ fn get_local_time() -> (u32, u32) {
     unsafe {
         GetLocalTime(st.as_mut_ptr());
         let st = st.assume_init();
-        (st.w_hour as u32, st.w_minute as u32)
+        (st.w_hour as u32, st.w_minute as u32, st.w_second as u32)
     }
 }
 
@@ -97,11 +97,12 @@ struct TrayApp {
 
 impl TrayApp {
     fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        let (hour, minute) = get_local_time();
+        let (hour, minute, second) = get_local_time();
         let pi_label = format!(
-            "({}:{})π",
+            "({}:{}:{})π",
             clock::hour_to_pi_fraction(hour).plain(),
-            clock::minute_to_pi_fraction(minute).plain()
+            clock::minute_to_pi_fraction(minute).plain(),
+            clock::second_to_pi_fraction(second).plain()
         );
 
         let tray = TrayIconBuilder::new()
@@ -117,13 +118,14 @@ impl TrayApp {
         Self { _tray: tray, popup_open: false, pi_label }
     }
 
-    /// Обновляет текст иконки, если изменилась минута
+    /// Обновляет текст иконки каждую секунду
     fn refresh_label(&mut self) {
-        let (h, m) = get_local_time();
+        let (h, m, s) = get_local_time();
         let new_label = format!(
-            "({}:{})π",
+            "({}:{}:{})π",
             clock::hour_to_pi_fraction(h).plain(),
-            clock::minute_to_pi_fraction(m).plain()
+            clock::minute_to_pi_fraction(m).plain(),
+            clock::second_to_pi_fraction(s).plain()
         );
         if new_label != self.pi_label {
             self.pi_label = new_label.clone();
@@ -145,25 +147,28 @@ impl eframe::App for TrayApp {
             }
         }
 
-        // 3. Просыпаемся каждые 30 с чтобы не пропустить смену минуты
-        ctx.request_repaint_after(Duration::from_secs(30));
+        // 3. Просыпаемся каждую секунду для обновления секундной стрелки
+        ctx.request_repaint_after(Duration::from_secs(1));
 
         // 4. Рендерим всплывающее окно, если открыто
         if self.popup_open {
-            let (hour, minute) = get_local_time();
-            let pi_frac = clock::time_to_pi_fraction(hour, minute);
+            let (hour, minute, second) = get_local_time();
+            let pi_frac = clock::full_time_to_pi_fraction(hour, minute, second);
             let hour_frac = clock::hour_to_pi_fraction(hour);
             let min_frac = clock::minute_to_pi_fraction(minute);
+            let sec_frac = clock::second_to_pi_fraction(second);
             let hour_pos = clock::nearest_hour_position(hour, minute);
             let min_pos = clock::nearest_minute_position(minute);
-            let ascii = display::render_circular_clock(hour_pos, min_pos, &pi_frac);
+            let sec_pos = clock::nearest_second_position(second);
+            let ascii = display::render_circular_clock(hour_pos, min_pos, sec_pos, &pi_frac);
             let digital = format!(
-                "({}:{})π = {}",
+                "({}:{}:{})π = {}",
                 hour_frac.plain(),
                 min_frac.plain(),
+                sec_frac.plain(),
                 pi_frac
             );
-            let time_str = format!("{:02}:{:02}", hour, minute);
+            let time_str = format!("{:02}:{:02}:{:02}", hour, minute, second);
 
             let mut popup_open = self.popup_open;
 
@@ -215,7 +220,7 @@ impl eframe::App for TrayApp {
                         ui.add_space(4.0);
                         ui.vertical_centered(|ui| {
                             ui.label(
-                                egui::RichText::new("* часовая   + минутная")
+                                egui::RichText::new("* часовая   + минутная   . секундная")
                                     .size(11.0)
                                     .weak()
                             );

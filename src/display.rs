@@ -44,7 +44,8 @@ fn circle_xy(angle: f64, rx: f64, ry: f64) -> (f64, f64) {
 /// Рисует круговые часы и возвращает многострочную строку.
 /// hour_pos  — позиция часовой стрелки (0..11)
 /// min_pos   — позиция минутной стрелки (0..11)
-pub fn render_circular_clock(hour_pos: usize, min_pos: usize, pi_fraction: &Fraction) -> String {
+/// sec_pos   — позиция секундной стрелки (0..11)
+pub fn render_circular_clock(hour_pos: usize, min_pos: usize, sec_pos: usize, pi_fraction: &Fraction) -> String {
     let mut grid = vec![vec![' '; WIDTH]; HEIGHT];
 
     // 1. Рисуем окружность точками
@@ -65,17 +66,31 @@ pub fn render_circular_clock(hour_pos: usize, min_pos: usize, pi_fraction: &Frac
         let xi = x.round() as usize;
         let yi = y.round() as usize;
         if xi < WIDTH && yi < HEIGHT {
-            let ch = match (pos == hour_pos, pos == min_pos) {
-                (true, true) => '◉',  // обе стрелки совпадают
-                (true, false) => '●', // только часовая
-                (false, true) => '◎', // только минутная
-                (false, false) => '○',
+            let ch = match (pos == hour_pos, pos == min_pos, pos == sec_pos) {
+                (true, true, _)   => '◉', // часовая + минутная
+                (true, false, _)  => '●', // только часовая
+                (false, true, _)  => '◎', // только минутная
+                (false, false, true)  => '◌', // только секундная
+                (false, false, false) => '○',
             };
             grid[yi][xi] = ch;
         }
     }
 
-    // 3. Рисуем минутную стрелку (+) — сначала, чтобы часовая была поверх
+    // 3. Рисуем секундную стрелку (.) — первой, перекрывается минутной и часовой
+    let sec_angle = position_angle(sec_pos);
+    let steps = 7;
+    for s in 1..=steps {
+        let t = s as f64 / steps as f64;
+        let (x, y) = circle_xy(sec_angle, RADIUS_X * t, RADIUS_Y * t);
+        let xi = x.round() as usize;
+        let yi = y.round() as usize;
+        if xi < WIDTH && yi < HEIGHT {
+            grid[yi][xi] = if s == steps { '◦' } else { '.' };
+        }
+    }
+
+    // 4. Рисуем минутную стрелку (+) — поверх секундной
     let min_angle = position_angle(min_pos);
     let steps = 7;
     for s in 1..=steps {
@@ -88,7 +103,7 @@ pub fn render_circular_clock(hour_pos: usize, min_pos: usize, pi_fraction: &Frac
         }
     }
 
-    // 4. Рисуем часовую стрелку (*) — поверх минутной
+    // 5. Рисуем часовую стрелку (*) — поверх минутной
     let hour_angle = position_angle(hour_pos);
     for s in 1..=steps {
         let t = s as f64 / steps as f64;
@@ -100,12 +115,12 @@ pub fn render_circular_clock(hour_pos: usize, min_pos: usize, pi_fraction: &Frac
         }
     }
 
-    // 5. Центр
+    // 6. Центр
     let cx = CENTER_X.round() as usize;
     let cy = CENTER_Y.round() as usize;
     grid[cy][cx] = '⊙';
 
-    // 6. Размещаем подписи позиций
+    // 7. Размещаем подписи позиций
     for pos in 0..12 {
         let angle = position_angle(pos);
         let (lx, ly) = circle_xy(angle, LABEL_RADIUS_X, LABEL_RADIUS_Y);
@@ -130,8 +145,8 @@ pub fn render_circular_clock(hour_pos: usize, min_pos: usize, pi_fraction: &Frac
             lxi.max(0) as usize
         };
 
-        // Подпись выделяем скобками, если совпадает с часовой или минутной стрелкой
-        let decorated = if pos == hour_pos || pos == min_pos {
+        // Подпись выделяем скобками, если совпадает с любой стрелкой
+        let decorated = if pos == hour_pos || pos == min_pos || pos == sec_pos {
             format!("[{}]", label)
         } else {
             label.to_string()
@@ -165,7 +180,7 @@ mod tests {
     #[test]
     fn test_render_does_not_panic() {
         let frac = Fraction::new(1, 2);
-        let output = render_circular_clock(3, 6, &frac);
+        let output = render_circular_clock(3, 6, 0, &frac);
         assert!(!output.is_empty());
         assert!(output.contains("π/2")); // позиция 3 = π/2
     }

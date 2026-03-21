@@ -53,12 +53,14 @@ fn main() {
     // Преобразуем время в дроби π
     let hour_frac = clock::hour_to_pi_fraction(hour);
     let min_frac = clock::minute_to_pi_fraction(minute);
-    let pi_frac = clock::time_to_pi_fraction(hour, minute);
+    let sec_frac = clock::second_to_pi_fraction(second);
+    let pi_frac = clock::full_time_to_pi_fraction(hour, minute, second);
     let hour_pos = clock::nearest_hour_position(hour, minute);
     let min_pos = clock::nearest_minute_position(minute);
+    let sec_pos = clock::nearest_second_position(second);
 
-    // Формат: (1/2:1/12)π = 7π/12
-    let pi_display = format!("({}:{})π = {}", hour_frac.plain(), min_frac.plain(), pi_frac);
+    // Формат: (1/2:1/12:1/360)π = 7π/12
+    let pi_display = format!("({}:{}:{})π = {}", hour_frac.plain(), min_frac.plain(), sec_frac.plain(), pi_frac);
 
     // === Электронные часы ===
     println!("╔══════════════════════════════════════╗");
@@ -75,9 +77,9 @@ fn main() {
     println!("╔══════════════════════════════════════════════╗");
     println!("║            π-ЧАСЫ (круговые)                ║");
     println!("╠══════════════════════════════════════════════╣");
-    println!("║  * часовая  + минутная                      ║");
+    println!("║  * часовая  + минутная  . секундная         ║");
     println!("╠══════════════════════════════════════════════╣");
     println!();
-    print!("{}", display::render_circular_clock(hour_pos, min_pos, &pi_frac));
+    print!("{}", display::render_circular_clock(hour_pos, min_pos, sec_pos, &pi_frac));
     println!("╚══════════════════════════════════════════════╝");
 }
