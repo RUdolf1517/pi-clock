@@ -179,6 +179,9 @@ impl eframe::App for TrayApp {
                     .with_inner_size([480.0, 460.0])
                     .with_resizable(false),
                 |ctx, _class| {
+                    // Перерисовываем попап каждую секунду независимо от root viewport
+                    ctx.request_repaint_after(Duration::from_secs(1));
+
                     // Закрыть по Escape
                     if ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
                         ctx.send_viewport_cmd(egui::ViewportCommand::Close);

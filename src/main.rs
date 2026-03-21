@@ -47,9 +47,7 @@ fn get_local_time() -> (u32, u32, u32) {
     }
 }
 
-fn main() {
-    let (hour, minute, second) = get_local_time();
-
+fn draw(hour: u32, minute: u32, second: u32) {
     // Преобразуем время в дроби π
     let hour_frac = clock::hour_to_pi_fraction(hour);
     let min_frac = clock::minute_to_pi_fraction(minute);
@@ -59,7 +57,6 @@ fn main() {
     let min_pos = clock::nearest_minute_position(minute);
     let sec_pos = clock::nearest_second_position(second);
 
-    // Формат: (1/2:1/12:1/360)π = 7π/12
     let pi_display = format!("({}:{}:{})π = {}", hour_frac.plain(), min_frac.plain(), sec_frac.plain(), pi_frac);
 
     // === Электронные часы ===
@@ -82,4 +79,26 @@ fn main() {
     println!();
     print!("{}", display::render_circular_clock(hour_pos, min_pos, sec_pos, &pi_frac));
     println!("╚══════════════════════════════════════════════╝");
+    println!();
+    println!("  Ctrl+C для выхода");
+}
+
+fn main() {
+    // Очищаем экран один раз при запуске
+    print!("\x1b[2J");
+
+    loop {
+        let (hour, minute, second) = get_local_time();
+
+        // Перемещаем курсор в верхний левый угол и перерисовываем
+        print!("\x1b[H");
+        draw(hour, minute, second);
+
+        // Спим до начала следующей секунды
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap();
+        let ms_to_next = 1000 - (now.subsec_millis() as u64);
+        std::thread::sleep(std::time::Duration::from_millis(ms_to_next));
+    }
 }
