@@ -4,6 +4,11 @@ Notable changes to pi-clock are recorded here. Versions follow Semantic Versioni
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-24
+
+- Redesign the TUI dial with Unicode hands, hour markers, and colored layers.
+- Start the tray alongside the TUI in tray-enabled builds; add a TUI-only option.
+
 ## [0.1.1] - 2026-10-24
 
 - Fix TTY detection and inherited stdin for the Ghostty/Unix TUI.

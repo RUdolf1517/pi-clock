@@ -6,7 +6,7 @@
 
 ## English
 
-A Rust CLI clock that expresses local time as rational multiples of π. All app actions go through one executable: `pi-clock`.
+A Rust clock that expresses local time as rational multiples of π. One `pi-clock` command opens the terminal dial and, in tray-enabled builds, starts the system-tray app alongside it.
 
 ### Time model
 
@@ -39,18 +39,22 @@ Release binaries: Linux x86_64/aarch64 (TUI), macOS Apple Silicon/Intel (TUI + t
 ### CLI commands
 
 ```text
-pi-clock [tui]               launch the interactive terminal UI (default)
-pi-clock tray                launch the system tray app (macOS/Windows release builds)
+pi-clock [tui]               launch the TUI and tray (if included in this build)
+pi-clock --no-tray            launch only the TUI
+pi-clock tray                launch only the system-tray app
 pi-clock install [--path DIR] install this executable
 pi-clock help                show command help
 pi-clock version             show version
 ```
 
+The default Linux release is TUI-only to avoid GUI system-library dependencies; the macOS and Windows releases include the tray. Build with `--features tray-app` to enable automatic tray startup in any supported build. Use `pi-clock --no-tray` (or `pi-clock tui --no-tray`) to suppress the tray.
+
 From the repository:
 
 ```bash
+cargo run --features tray-app --bin pi-clock --       # TUI + tray
+cargo run --bin pi-clock -- --no-tray                 # TUI only
 cargo run --bin pi-clock -- help
-cargo run --features tray-app --bin pi-clock -- tray
 ```
 
 In the TUI, press `q` or `Esc` to quit (`Ctrl+C` also works on Unix), `c` to toggle color, and `?` to show or hide help. Unix terminals accept keys immediately; on Windows, press Enter after a command. Building the tray requires native platform libraries used by `eframe` and `tray-icon`.
@@ -122,18 +126,22 @@ irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.ps1 | i
 ### Команды CLI
 
 ```text
-pi-clock [tui]               запустить интерактивный TUI (по умолчанию)
-pi-clock tray                запустить системный трей (релиз macOS/Windows)
+pi-clock [tui]               запустить TUI и трей (если он включён в сборку)
+pi-clock --no-tray            запустить только TUI
+pi-clock tray                запустить только системный трей
 pi-clock install [--path DIR] установить этот исполняемый файл
 pi-clock help                показать справку
 pi-clock version             показать версию
 ```
 
+В готовых релизах Linux включён только TUI — без GUI-зависимостей; релизы macOS и Windows включают трей. Чтобы включить автозапуск трея, соберите программу с `--features tray-app`. Для запуска одного TUI используйте `pi-clock --no-tray` или `pi-clock tui --no-tray`.
+
 Запуск из каталога проекта:
 
 ```bash
+cargo run --features tray-app --bin pi-clock --       # TUI + трей
+cargo run --bin pi-clock -- --no-tray                 # только TUI
 cargo run --bin pi-clock -- help
-cargo run --features tray-app --bin pi-clock -- tray
 ```
 
 В TUI: `q` или `Esc` — выход (`Ctrl+C` также работает в Unix), `c` — переключить цвет, `?` — показать/скрыть справку. В Unix-терминалах клавиши работают сразу; в Windows команду нужно подтвердить клавишей Enter. Для сборки трея нужны системные библиотеки `eframe` и `tray-icon`.
