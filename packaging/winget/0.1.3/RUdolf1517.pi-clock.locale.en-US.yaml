@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+PackageIdentifier: RUdolf1517.pi-clock
+PackageVersion: 0.1.3
+PackageLocale: en-US
+Publisher: RUdolf1517
+PublisherUrl: https://github.com/RUdolf1517
+PublisherSupportUrl: https://github.com/RUdolf1517/pi-clock/issues
+Author: RUdolf1517
+PackageName: pi-clock
+PackageUrl: https://github.com/RUdolf1517/pi-clock
+License: MIT
+ShortDescription: Terminal clock that displays local time as multiples of pi
+Description: Shows local time as rational multiples of pi in a 12-hour terminal dial and a system tray app.
+Moniker: pi-clock
+Tags:
+  - clock
+  - cli
+  - terminal
+  - rust
+ReleaseNotesUrl: https://github.com/RUdolf1517/pi-clock/releases/tag/v0.1.3
+ManifestType: defaultLocale
+ManifestVersion: 1.10.0

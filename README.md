@@ -57,7 +57,7 @@ curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clo
 sudo dnf install ./pi-clock.x86_64.rpm
 ```
 
-**Windows winget:** `winget install -e --id RUdolf1517.pi-clock` once the manifest is accepted into the community source. Until then, clone this repo, enable `winget settings --enable LocalManifestFiles` once in an elevated terminal, then run `winget install --manifest .\packaging\winget\0.1.2`.
+**Windows winget:** `winget install -e --id RUdolf1517.pi-clock` once the manifest is accepted into the community source. Until then, clone this repo, enable `winget settings --enable LocalManifestFiles` once in an elevated terminal, then run `winget install --manifest .\packaging\winget\0.1.3`.
 
 Release binaries: Linux x86_64/aarch64 (TUI), macOS Apple Silicon/Intel (TUI + tray), Windows x64 (TUI + tray). The Linux release intentionally avoids GUI system-library dependencies; to build the tray there, compile with `--features tray-app`.
 
@@ -169,7 +169,7 @@ curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clo
 sudo dnf install ./pi-clock.x86_64.rpm
 ```
 
-**Windows winget:** после публикации манифеста в community source: `winget install -e --id RUdolf1517.pi-clock`. Пока манифест не принят, клонируйте репозиторий, один раз включите `winget settings --enable LocalManifestFiles` в терминале администратора и установите локально: `winget install --manifest .\packaging\winget\0.1.2`.
+**Windows winget:** после публикации манифеста в community source: `winget install -e --id RUdolf1517.pi-clock`. Пока манифест не принят, клонируйте репозиторий, один раз включите `winget settings --enable LocalManifestFiles` в терминале администратора и установите локально: `winget install --manifest .\packaging\winget\0.1.3`.
 
 Готовые сборки: Linux x86_64/aarch64 (TUI), macOS Apple Silicon/Intel (TUI + трей), Windows x64 (TUI + трей). В Linux-сборке нет GUI-зависимостей; чтобы собрать там трей, используйте feature `tray-app`.
 
