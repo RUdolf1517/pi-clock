@@ -111,9 +111,9 @@ mod tests {
 
     #[test]
     fn renders_clock_and_pi_value() {
-        let output = render_circular_clock(3, 30, 45, &Fraction::new(221, 480));
+        let output = render_circular_clock(3, 30, 45, &Fraction::new(281, 480));
         assert!(output.contains("12-часовой циферблат"));
-        assert!(output.contains("221π/480"));
+        assert!(output.contains("281π/480"));
         assert!(output.contains("⊙"));
     }
 

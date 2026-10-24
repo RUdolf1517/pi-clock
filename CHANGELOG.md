@@ -8,3 +8,4 @@ Notable changes to pi-clock are recorded here. Versions follow Semantic Versioni
 - Add cross-platform CI and tag-driven release builds.
 - Add an interactive TUI, a 12-hour smooth dial, and one-command installers.
 - Improve fraction arithmetic and share platform local-time handling.
+- Correct the 03:30:45 example: its combined coefficient is 281/480, not 221/480.

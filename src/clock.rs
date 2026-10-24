@@ -136,7 +136,7 @@ mod tests {
         assert_eq!(time_to_pi_fraction(0, 0), Fraction::new(0, 1));
         assert_eq!(time_to_pi_fraction(6, 0), Fraction::new(1, 1));
         assert_eq!(time_to_pi_fraction(20, 0), Fraction::new(10, 3));
-        assert_eq!(full_time_to_pi_fraction(3, 30, 45), Fraction::new(221, 480));
+        assert_eq!(full_time_to_pi_fraction(3, 30, 45), Fraction::new(281, 480));
         assert_eq!(full_time_to_pi_fraction(23, 59, 59), Fraction::new(86399, 21600));
     }
 

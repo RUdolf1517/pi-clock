@@ -22,17 +22,7 @@ jobs:
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Run tests
-        shell: bash
-        run: |
-          set +e
-          cargo test --locked --no-default-features > test-output.txt 2>&1
-          result=$?
-          cat test-output.txt
-          if [ "$result" -ne 0 ]; then
-            summary="$(tail -n 12 test-output.txt | tr '\n' ' ')"
-            echo "::error title=Rust test failure::$summary"
-            exit "$result"
-          fi
+        run: cargo test --locked --no-default-features
       - name: Build CLI
         run: cargo build --locked --release --bin pi-clock
       - name: Smoke-test CLI commands
