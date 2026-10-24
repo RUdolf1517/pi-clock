@@ -7,7 +7,8 @@ VERSION=${1:?usage: linux-packages.sh VERSION DIST_DIR}
 DIST=${2:?usage: linux-packages.sh VERSION DIST_DIR}
 NFPM_VERSION=${NFPM_VERSION:-2.48.0}
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-MAN_PAGE="$SCRIPT_DIR/../man/pi-clock.1"
+MAN_DIR=$(cd "$SCRIPT_DIR/../man" && pwd)
+MAN_PAGE="$MAN_DIR/pi-clock.1"
 
 command -v curl >/dev/null 2>&1 || { echo "need curl to download nfpm" >&2; exit 1; }
 command -v tar >/dev/null 2>&1 || { echo "need tar" >&2; exit 1; }
