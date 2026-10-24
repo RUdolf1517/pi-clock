@@ -1,10 +1,14 @@
 use std::{env, fs, path::PathBuf, process};
+#[cfg(feature = "tray-app")]
+use std::process::{Child, Command, Stdio};
+
 
 const HELP: &str = r#"pi-clock — часы и π-время
 
 Использование:
-  pi-clock [tui]               запустить полноэкранные терминальные часы (по умолчанию)
-  pi-clock tray                запустить приложение в системном трее
+  pi-clock [tui]               запустить TUI и трей (если включён в сборку)
+  pi-clock --no-tray            запустить только TUI
+  pi-clock tray                запустить приложение только в системном трее
   pi-clock install [--path DIR] установить текущий бинарник
   pi-clock help                показать эту справку
   pi-clock version             показать версию
@@ -17,11 +21,19 @@ fn main() {
     let args: Vec<String> = env::args().skip(1).collect();
     let result = match args.as_slice() {
         [] => {
-            pi_clock::tui::run();
+            run_tui(true);
             Ok(())
         }
         [arg] if arg == "tui" => {
-            pi_clock::tui::run();
+            run_tui(true);
+            Ok(())
+        }
+        [flag] if flag == "--no-tray" => {
+            run_tui(false);
+            Ok(())
+        }
+        [command, flag] if command == "tui" && flag == "--no-tray" => {
+            run_tui(false);
             Ok(())
         }
         [arg] if matches!(arg.as_str(), "help" | "--help" | "-h") => {
@@ -43,6 +55,58 @@ fn main() {
     if let Err(error) = result {
         eprintln!("pi-clock: {error}");
         process::exit(2);
+    }
+}
+
+fn run_tui(with_tray: bool) {
+    #[cfg(feature = "tray-app")]
+    let mut tray_child = if with_tray {
+        launch_tray()
+    } else {
+        None
+    };
+
+    #[cfg(not(feature = "tray-app"))]
+    let _ = with_tray;
+
+    pi_clock::tui::run();
+
+    #[cfg(feature = "tray-app")]
+    if let Some(mut child) = tray_child.take() {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+}
+
+#[cfg(feature = "tray-app")]
+fn launch_tray() -> Option<Child> {
+    let executable = match env::current_exe() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("pi-clock: не удалось определить бинарник для запуска трея: {error}");
+            return None;
+        }
+    };
+    let mut command = Command::new(executable);
+    command
+        .arg("tray")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+
+    match command.spawn() {
+        Ok(child) => Some(child),
+        Err(error) => {
+            eprintln!("pi-clock: не удалось автоматически запустить трей: {error}");
+            None
+        }
     }
 }
 

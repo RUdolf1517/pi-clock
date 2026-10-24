@@ -153,7 +153,11 @@ fn draw(hour: u32, minute: u32, second: u32, colored: bool, show_help: bool) -> 
     let minute_part = clock::minute_to_pi_fraction(minute).plain();
     let second_part = clock::second_to_pi_fraction(second).plain();
     let digital = format!("({hour_part}:{minute_part}:{second_part})π = {pi_fraction}");
-    let face = display::render_circular_clock(hour, minute, second, &pi_fraction);
+    let face = if colored {
+        display::render_circular_clock_colored(hour, minute, second, &pi_fraction)
+    } else {
+        display::render_circular_clock(hour, minute, second, &pi_fraction)
+    };
     let mut out = String::from("\x1b[H\x1b[2J");
     if colored {
         out.push_str("\x1b[1;96m╭─ π-ЧАСЫ ─────────────────────────────────────────╮\x1b[0m\n");
@@ -168,9 +172,9 @@ fn draw(hour: u32, minute: u32, second: u32, colored: bool, show_help: bool) -> 
     }
     out.push_str(&face);
     if colored {
-        out.push_str("\x1b[96m*\x1b[0m часовая   \x1b[92m+\x1b[0m минутная   \x1b[93m.\x1b[0m секундная   │ q выход · c цвет · ? справка\n");
+        out.push_str("\x1b[1;38;5;213m◆\x1b[0m часовая   \x1b[1;38;5;45m◇\x1b[0m минутная   \x1b[1;38;5;220m◦\x1b[0m секундная   │ q выход · c цвет · ? справка\n");
     } else {
-        out.push_str("* часовая   + минутная   . секундная   │ q выход · c цвет · ? справка\n");
+        out.push_str("◆ часовая   ◇ минутная   ◦ секундная   │ q выход · c цвет · ? справка\n");
     }
     if show_help {
         out.push_str("Стрелки движутся плавно; аналоговый циферблат повторяется каждые 12 часов.\n");
