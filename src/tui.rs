@@ -124,7 +124,7 @@ fn run_inner() -> io::Result<()> {
             if (hour, minute, second) != last_time {
                 draw(hour, minute, second, colored, show_help)?;
                 last_time = (hour, minute, second);
-                last_frame = Instant::now();
+                last_frame = Some(Instant::now());
             }
         }
     }
