@@ -115,7 +115,17 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-        run: bash -x packaging/linux-packages.sh "${RELEASE_VERSION#v}" release-assets
+        run: |
+          set +e
+          bash -x packaging/linux-packages.sh "${RELEASE_VERSION#v}" release-assets > "$RUNNER_TEMP/pi-clock-packaging.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/pi-clock-packaging.log"
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              echo "::error title=Linux package generation::$line"
+            done < <(tail -n 6 "$RUNNER_TEMP/pi-clock-packaging.log")
+          fi
+          exit "$status"
       - name: Create SHA-256 sums
         shell: bash
         run: |
