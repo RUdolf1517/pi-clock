@@ -21,6 +21,9 @@ jobs:
         uses: actions/checkout@v5
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Check package script syntax
+        if: runner.os == 'Linux'
+        run: sh -n packaging/linux-packages.sh
       - name: Run tests
         run: cargo test --locked --no-default-features
       - name: Build CLI

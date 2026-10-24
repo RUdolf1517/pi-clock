@@ -1,0 +1,48 @@
+.TH PI-CLOCK 1 "October 2026" "pi-clock" "User Commands"
+.SH NAME
+pi-clock \- terminal clock that expresses local time as multiples of pi
+.SH SYNOPSIS
+.B pi-clock
+.RI [ tui ]
+.br
+.B pi-clock
+.B --no-tray
+.br
+.B pi-clock
+.B tray
+.br
+.B pi-clock
+.B help
+.br
+.B pi-clock
+.B version
+.SH DESCRIPTION
+.B pi-clock
+shows local time in a terminal UI and, in tray-enabled builds, starts a system-tray clock alongside it. The dial is 12-hour; the numeric pi-time tracks the full 24-hour day.
+.SH OPTIONS
+.TP
+.B --no-tray
+Run only the terminal UI.
+.TP
+.B tray
+Run only the system-tray app. Available when built with the tray-app feature.
+.TP
+.B help
+Show command help.
+.TP
+.B version
+Show the installed version.
+.SH TUI KEYS
+.TP
+.B q, Esc
+Exit the TUI.
+.TP
+.B c
+Toggle color.
+.TP
+.B ?
+Show or hide help.
+.SH VERSION
+The package version is maintained in Cargo.toml and published as matching vMAJOR.MINOR.PATCH Git tags.
+.SH SEE ALSO
+.BR cargo (1)

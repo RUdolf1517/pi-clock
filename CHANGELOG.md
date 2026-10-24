@@ -4,6 +4,10 @@ Notable changes to pi-clock are recorded here. Versions follow Semantic Versioni
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-10-24
+
+- Add Homebrew, apt, dnf, and winget package-manager distribution alongside release archives.
+
 ## [0.1.2] - 2026-10-24
 
 - Redesign the TUI dial with Unicode hands, hour markers, and colored layers.

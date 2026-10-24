@@ -104,16 +104,25 @@ jobs:
     needs: [verify-version, build]
     runs-on: ubuntu-latest
     steps:
+      - name: Check out packaging scripts
+        uses: actions/checkout@v5
       - name: Download platform packages
         uses: actions/download-artifact@v6
         with:
           path: release-assets
           merge-multiple: true
+      - name: Build Linux package-manager assets (.deb / .rpm)
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: bash packaging/linux-packages.sh "${RELEASE_VERSION#v}" release-assets
       - name: Create SHA-256 sums
         shell: bash
         run: |
           cd release-assets
-          sha256sum -- *.tar.gz *.zip > SHA256SUMS
+          for file in *.tar.gz *.zip *.deb *.rpm; do
+            [ -f "$file" ] && sha256sum -- "$file"
+          done > SHA256SUMS
       - name: Create release and upload binaries
         uses: softprops/action-gh-release@v2
         with:
