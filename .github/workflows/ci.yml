@@ -18,13 +18,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install stable Rust
         uses: dtolnay/rust-toolchain@stable
       - name: Run tests
         run: cargo test --locked --no-default-features
       - name: Build CLI
         run: cargo build --locked --release --bin pi-clock
+      - name: Build tray-enabled CLI
+        if: runner.os != 'Linux'
+        run: cargo build --locked --release --features tray-app --bin pi-clock
       - name: Smoke-test CLI commands
         run: |
           cargo run --locked --bin pi-clock -- version
