@@ -6,141 +6,59 @@
 
 ## English
 
-A clock that represents time as fractions of π, written in Rust. Two modes: an animated terminal clock and a system tray app.
+A Rust CLI clock that expresses local time as rational multiples of π. All app actions go through one executable: `pi-clock`.
 
-### How it works
+### Time model
 
-Standard time is mapped to radians:
+The 24-hour day maps to four turns: `1 hour = π/6`, `1 minute = π/360`, `1 second = π/21600`. For `H:M:S`, the coefficient is `H/6 + M/360 + S/21600`; fractions are reduced automatically. The analog dial is 12-hour and its hands move smoothly, so the 0 and 12 positions coincide. The numeric π value still follows the full 24-hour day.
 
-| Unit      | Value   |
-|-----------|---------|
-| 1 hour    | π/6     |
-| 1 minute  | π/360   |
-| 1 second  | π/21600 |
-| 24 hours  | 4π      |
+Example at 03:30:45:
 
-Each unit is converted to a reduced fraction independently, then displayed in the format `(h:m:s)π`:
-
-```
-3:30:45  →  hours:   3  × π/6     = π/2      →  1/2
-             minutes: 30 × π/360   = π/12     →  1/12
-             seconds: 45 × π/21600 = π/480    →  1/480
-             combined: π/2 + π/12 + π/480 = 221π/480
-
-display: (1/2:1/12:1/480)π = 221π/480
+```text
+(1/2:1/12:1/480)π = 221π/480
 ```
 
-All fractions are always reduced using GCD (Euclidean algorithm).
+### Install
 
-### Preview
-
-**Terminal clock** (animated, updates every second, Ctrl+C to quit):
-```
-╔══════════════════════════════════════╗
-║         π-ЧАСЫ (электронные)         ║
-╠══════════════════════════════════════╣
-║                                      ║
-║   Время: 03:30:45                     ║
-║   π-время: (1/2:1/12:1/480)π = 221π/480║
-║                                      ║
-╚══════════════════════════════════════╝
-
-╔══════════════════════════════════════════════╗
-║            π-ЧАСЫ (круговые)                ║
-╠══════════════════════════════════════════════╣
-║  * часовая  + минутная  . секундная         ║
-╠══════════════════════════════════════════════╣
-
-                      [0]
-       11π/6     ·····◎·····    π/6
-             ·○··           ··○·
-          ····                 ····
-  5π/3   ··                       ··  π/3
-        ○·                         ·○
-       ·                             ·
-      ··   * *                       ··
-      ·         * *                   ·
-3π/2  ○               ⊙* * * * * *◆  [π/2]
-      ·                               ·
-      ··                             ··
-       ·                             ·
-        ○·                         ·○
-  4π/3   ··                       ··  2π/3
-          ····                 ····
-             ·○··           ··○·
-         7π/6    ·····○·····    5π/6
-
-                     π
-
-    Текущее положение стрелки: 221π/480
-
-  Ctrl+C для выхода
-╚══════════════════════════════════════════════╝
-```
-
-**System tray (macOS menu bar):**
-```
-(1/2:1/12:1/480)π     ← text in menu bar, updates every second
-```
-
-Clicking the icon opens a popup window with both clock modes. The popup also updates every second — all three hands move in real time.
-
-### Requirements
-
-- Rust 1.80+ (edition 2024)
-- macOS or Windows
-- No extra dependencies for the terminal binary
-- For the tray app: `eframe` + `tray-icon` (automatically downloaded by Cargo)
-
-### Installation
+Requirements: Rust/Cargo 1.85 or newer. Run the platform installer from the repository directory:
 
 ```bash
-git clone https://github.com/RUdolf1517/pi-clock
-cd pi-clock
+# Linux / macOS
+./install.sh
+
+# Windows PowerShell
+.\install.ps1
 ```
 
-### Running
+The installer bootstraps Rust if needed, builds the single `pi-clock` CLI, and installs it to `~/.local/bin` (Linux/macOS) or `%LOCALAPPDATA%\Programs\pi-clock` (Windows). Add the directory to `PATH` if the installer says it is missing. To include the tray command, use `./install.sh --with-tray` or `./install.ps1 -WithTray`.
 
-**Terminal clock** (animated, Ctrl+C to quit):
+### CLI commands
+
+```text
+pi-clock [tui]               launch the interactive terminal UI (default)
+pi-clock tray                launch the system tray app
+pi-clock install [--path DIR] install this executable
+pi-clock help                show command help
+pi-clock version             show version
+```
+
+The tray is optional and must be compiled with the `tray-app` feature. From the repository, for example:
+
 ```bash
-cargo run --bin pi-clock
+cargo run --bin pi-clock -- help
 ```
 
-**System tray app** (macOS menu bar / Windows notification area):
+For Cargo, features belong before the `--` that separates Cargo arguments from app arguments. Use:
+
 ```bash
-cargo run --bin tray
+cargo run --features tray-app --bin pi-clock -- tray
 ```
 
-Release build (optimized):
-```bash
-cargo build --release
-# binaries: ./target/release/pi-clock  and  ./target/release/tray
-```
+In the TUI, press `q` or `Esc` to quit (`Ctrl+C` also works on Unix), `c` to toggle color, and `?` to show or hide help. Unix terminals accept keys immediately; on Windows, press Enter after a command. Building the tray requires native platform libraries used by `eframe` and `tray-icon`.
 
-**Autostart on macOS:**
-1. `cargo build --release`
-2. Copy `target/release/tray` somewhere permanent, e.g. `~/Applications/pi-clock`
-3. Open **System Settings → General → Login Items**
-4. Click `+` and add the `tray` binary
+### Versioning and releases
 
-**Autostart on Windows:**
-1. `cargo build --release`
-2. Create a shortcut to `target\release\tray.exe`
-3. Press `Win + R`, type `shell:startup`
-4. Move the shortcut into the startup folder
-
-### Project structure
-
-```
-src/
-├── lib.rs        — library root, re-exports modules for the tray binary
-├── main.rs       — terminal clock entry point (animated loop)
-├── fraction.rs   — Fraction struct: GCD, addition, Display (nπ/d), plain() (n/d)
-├── clock.rs      — time → π-fraction conversion (h, m, s)
-├── display.rs    — ASCII circular clock renderer (3 hands)
-└── bin/
-    └── tray.rs   — system tray app (eframe GUI + tray-icon)
-```
+`Cargo.toml` is the source of truth for the SemVer version (`MAJOR.MINOR.PATCH`); `pi-clock version` prints it. Record changes in `CHANGELOG.md`. To publish, update the package version and changelog, then push a matching `vX.Y.Z` tag. The release workflow verifies the tag, tests/builds Linux, macOS, and Windows binaries, and creates a GitHub release with the packaged executables.
 
 ### Tests
 
@@ -148,147 +66,75 @@ src/
 cargo test
 ```
 
-13 unit tests cover GCD, fraction reduction, addition, Display formatting, and time conversion.
+### Project structure
 
-### Math
-
-The full π-fraction for a moment H:M:S:
-
-```
-f(H, M, S) = H/6 + M/360 + S/21600
-```
-
-Fraction addition with reduction:
-
-```
-a/b + c/d = (a×d + c×b) / (b×d),  then divide by GCD
-```
-
-Examples:
-
-| Time    | Hours | Minutes | Seconds | Combined      |
-|---------|-------|---------|---------|---------------|
-| 0:00:00 | 0     | 0       | 0       | 0             |
-| 3:00:00 | 1/2   | 0       | 0       | π/2           |
-| 6:00:00 | 1     | 0       | 0       | π             |
-| 9:00:00 | 3/2   | 0       | 0       | 3π/2          |
-| 3:30:00 | 1/2   | 1/12    | 0       | 7π/12         |
-| 12:00:00| 2     | 0       | 0       | 2π            |
-| 20:35:00| 10/3  | 7/72    | 0       | 103π/72       |
-| 3:30:45 | 1/2   | 1/12    | 1/480   | 221π/480      |
+```text
+src/
+├── lib.rs        library modules
+├── main.rs       CLI dispatcher: tui, tray, install, help, version
+├── tui.rs        interactive terminal UI and terminal-mode handling
+├── tray.rs       optional system-tray app (tray-app feature)
+├── fraction.rs   rational arithmetic and π formatting
+├── clock.rs      time conversion, local-time access, hand positions
+└── display.rs    compact 12-hour text dial
+install.sh        Linux/macOS installer
+install.ps1       Windows installer
+.github/workflows/ci.yml      cross-platform tests on push/PR
+.github/workflows/release.yml tag-driven SemVer release builds
+CHANGELOG.md      release notes
 
 ---
 
 ## Русский
 
-Часы, которые выражают текущее время через дроби числа π. Написаны на Rust. Два режима: анимированные терминальные часы и системный трей.
+CLI-часы на Rust, которые показывают локальное время через рациональные коэффициенты числа π. Все действия запускаются из одного исполняемого файла: `pi-clock`.
 
-### Как это работает
+### Модель времени
 
-Стандартное время переводится в радианы по формулам:
+Сутки в 24-часовом формате соответствуют четырём оборотам: `1 час = π/6`, `1 минута = π/360`, `1 секунда = π/21600`. Для `ЧЧ:ММ:СС` коэффициент равен `Ч/6 + М/360 + С/21600`; дроби автоматически сокращаются. Аналоговый циферблат 12-часовой, стрелки движутся плавно, позиции 0 и 12 совпадают. Числовое π-время учитывает полные 24 часа.
 
-| Единица  | Значение |
-|----------|----------|
-| 1 час    | π/6      |
-| 1 минута | π/360    |
-| 1 секунда| π/21600  |
-| 24 часа  | 4π       |
+Пример для 03:30:45:
 
-Каждая единица переводится в отдельную сокращённую дробь, затем все три отображаются в формате `(ч:м:с)π`:
-
+```text
+(1/2:1/12:1/480)π = 221π/480
 ```
-3:30:45  →  часы:    3  × π/6     = π/2    →  дробь: 1/2
-             минуты:  30 × π/360   = π/12   →  дробь: 1/12
-             секунды: 45 × π/21600 = π/480  →  дробь: 1/480
-             сумма: π/2 + π/12 + π/480 = 221π/480
-
-отображение: (1/2:1/12:1/480)π = 221π/480
-```
-
-Все дроби всегда сокращаются через НОД (алгоритм Евклида).
-
-### Предварительный просмотр
-
-**Терминальные часы** (анимация, обновляются каждую секунду, выход — Ctrl+C):
-```
-╔══════════════════════════════════════╗
-║         π-ЧАСЫ (электронные)         ║
-╠══════════════════════════════════════╣
-║                                      ║
-║   Время: 03:30:45                     ║
-║   π-время: (1/2:1/12:1/480)π = 221π/480║
-║                                      ║
-╚══════════════════════════════════════╝
-```
-
-Круговые часы отображают циферблат от 0 до 2π с тремя стрелками:
-- `*` — часовая, `◆` — наконечник
-- `+` — минутная, `◇` — наконечник
-- `.` — секундная, `◦` — наконечник
-
-**Трей (меню-бар macOS):**
-```
-(1/2:1/12:1/480)π     ← текст в меню-баре, обновляется каждую секунду
-```
-
-При клике по иконке открывается всплывающее окно с обоими режимами. Все три стрелки движутся в реальном времени.
-
-### Требования
-
-- Rust 1.80+ (edition 2024)
-- macOS или Windows
-- Для терминального бинарника: только стандартная библиотека (`std`)
-- Для трей-приложения: `eframe` + `tray-icon` (скачиваются через Cargo автоматически)
 
 ### Установка
 
+Требуется Rust/Cargo 1.85 или новее. Запустите установщик из каталога проекта:
+
 ```bash
-git clone https://github.com/RUdolf1517/pi-clock
-cd pi-clock
+# Linux / macOS
+./install.sh
+
+# Windows PowerShell
+.\install.ps1
 ```
 
-### Запуск
+Скрипт при необходимости установит Rust, соберёт единый CLI `pi-clock` и установит его в `~/.local/bin` (Linux/macOS) или `%LOCALAPPDATA%\Programs\pi-clock` (Windows). Если установщик сообщит, что каталога нет в `PATH`, добавьте его. Чтобы включить команду трея, запустите `./install.sh --with-tray` или `./install.ps1 -WithTray`.
 
-**Терминальные часы** (анимация, Ctrl+C для выхода):
+### Команды CLI
+
+```text
+pi-clock [tui]               запустить интерактивный TUI (по умолчанию)
+pi-clock tray                запустить приложение в системном трее
+pi-clock install [--path DIR] установить этот исполняемый файл
+pi-clock help                показать справку
+pi-clock version             показать версию
+```
+
+Трей необязателен и собирается с feature `tray-app`. Примеры запуска из каталога проекта:
+
 ```bash
-cargo run --bin pi-clock
+cargo run --bin pi-clock -- help
+cargo run --features tray-app --bin pi-clock -- tray
 ```
 
-**Трей-приложение** (меню-бар macOS / область уведомлений Windows):
-```bash
-cargo run --bin tray
-```
+В TUI: `q` или `Esc` — выход (`Ctrl+C` также работает в Unix), `c` — переключить цвет, `?` — показать/скрыть справку. В Unix-терминалах клавиши работают сразу; в Windows команду нужно подтвердить клавишей Enter. Для трея нужны системные библиотеки, требуемые `eframe` и `tray-icon`.
 
-Сборка оптимизированных бинарников:
-```bash
-cargo build --release
-# готовые файлы: ./target/release/pi-clock  и  ./target/release/tray
-```
+### Версии и релизы
 
-**Автозапуск на macOS:**
-1. Собери release-бинарник: `cargo build --release`
-2. Скопируй `target/release/tray` в удобное место, например `~/Applications/pi-clock`
-3. Открой **Системные настройки → Основные → Объекты входа**
-4. Нажми `+` и добавь бинарник `tray`
-
-**Автозапуск на Windows:**
-1. Собери: `cargo build --release`
-2. Создай ярлык для `target\release\tray.exe`
-3. Нажми `Win + R`, введи `shell:startup`
-4. Перенеси ярлык в открывшуюся папку автозагрузки
-
-### Структура проекта
-
-```
-src/
-├── lib.rs        — библиотечный корень, экспортирует модули для трея
-├── main.rs       — точка входа терминальных часов (анимированный цикл)
-├── fraction.rs   — структура Fraction: НОД, сложение, Display (nπ/d), plain() (n/d)
-├── clock.rs      — преобразование времени в π-дроби (ч, м, с)
-├── display.rs    — рендеринг ASCII-циферблата (3 стрелки)
-└── bin/
-    └── tray.rs   — трей-приложение (eframe GUI + tray-icon)
-```
+Единственный источник версии SemVer (`MAJOR.MINOR.PATCH`) — поле `version` в `Cargo.toml`; команду можно проверить через `pi-clock version`. Изменения фиксируются в `CHANGELOG.md`. Для релиза обновите версию и changelog, затем отправьте соответствующий тег `vX.Y.Z`. Release workflow проверит совпадение версии, соберёт бинарники для Linux, macOS и Windows и создаст GitHub Release.
 
 ### Тесты
 
@@ -296,31 +142,17 @@ src/
 cargo test
 ```
 
-13 юнит-тестов покрывают: НОД, сокращение дробей, сложение, форматирование и преобразование времени.
+### Структура проекта
 
-### Математика подробнее
-
-Полная π-дробь для момента времени Ч:М:С:
-
+```text
+src/
+├── lib.rs        библиотечные модули
+├── main.rs       диспетчер CLI: tui, tray, install, help, version
+├── tui.rs        интерактивный TUI и управление терминалом
+├── tray.rs       необязательное приложение в трее (feature tray-app)
+├── fraction.rs   арифметика рациональных чисел и форматирование π
+├── clock.rs      перевод времени, локальное время, положение стрелок
+└── display.rs    компактный 12-часовой текстовый циферблат
+install.sh        установщик Linux/macOS
+install.ps1       установщик Windows
 ```
-f(Ч, М, С) = Ч/6 + М/360 + С/21600
-```
-
-Сложение дробей с сокращением:
-
-```
-a/b + c/d = (a×d + c×b) / (b×d),  затем деление на НОД
-```
-
-Примеры:
-
-| Время    | Часы  | Минуты | Секунды | Итого         |
-|----------|-------|--------|---------|---------------|
-| 0:00:00  | 0     | 0      | 0       | 0             |
-| 3:00:00  | 1/2   | 0      | 0       | π/2           |
-| 6:00:00  | 1     | 0      | 0       | π             |
-| 9:00:00  | 3/2   | 0      | 0       | 3π/2          |
-| 3:30:00  | 1/2   | 1/12   | 0       | 7π/12         |
-| 12:00:00 | 2     | 0      | 0       | 2π            |
-| 20:35:00 | 10/3  | 7/72   | 0       | 103π/72       |
-| 3:30:45  | 1/2   | 1/12   | 1/480   | 221π/480      |

@@ -1,104 +1,99 @@
-/// Pi-Clock: часы с представлением времени через число π.
-///
-/// 12 часов = 2π, 1 час = π/6, 1 минута = π/360.
-/// Два режима отображения: электронные (дробь π) и круговые (ASCII-циферблат).
+use std::{env, fs, path::PathBuf, process};
 
-mod fraction;
-mod clock;
-mod display;
+const HELP: &str = r#"pi-clock — часы и π-время
 
-/// Получение локального времени через libc (без внешних зависимостей).
-fn get_local_time() -> (u32, u32, u32) {
-    use std::time::{SystemTime, UNIX_EPOCH};
+Использование:
+  pi-clock [tui]               запустить полноэкранные терминальные часы (по умолчанию)
+  pi-clock tray                запустить приложение в системном трее
+  pi-clock install [--path DIR] установить текущий бинарник
+  pi-clock help                показать эту справку
+  pi-clock version             показать версию
 
-    let secs = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("Системное время раньше UNIX_EPOCH")
-        .as_secs() as i64;
-
-    // Используем libc для преобразования в локальное время
-    #[repr(C)]
-    struct Tm {
-        tm_sec: i32,
-        tm_min: i32,
-        tm_hour: i32,
-        tm_mday: i32,
-        tm_mon: i32,
-        tm_year: i32,
-        tm_wday: i32,
-        tm_yday: i32,
-        tm_isdst: i32,
-        tm_gmtoff: i64,
-        tm_zone: *const i8,
-    }
-
-    unsafe extern "C" {
-        fn localtime_r(time: *const i64, result: *mut Tm) -> *mut Tm;
-    }
-
-    let mut tm = std::mem::MaybeUninit::<Tm>::uninit();
-    unsafe {
-        let result = localtime_r(&secs, tm.as_mut_ptr());
-        if result.is_null() {
-            panic!("localtime_r вернул NULL");
-        }
-        let tm = tm.assume_init();
-        (tm.tm_hour as u32, tm.tm_min as u32, tm.tm_sec as u32)
-    }
-}
-
-fn draw(hour: u32, minute: u32, second: u32) {
-    // Преобразуем время в дроби π
-    let hour_frac = clock::hour_to_pi_fraction(hour);
-    let min_frac = clock::minute_to_pi_fraction(minute);
-    let sec_frac = clock::second_to_pi_fraction(second);
-    let pi_frac = clock::full_time_to_pi_fraction(hour, minute, second);
-    let hour_pos = clock::nearest_hour_position(hour, minute);
-    let min_pos = clock::nearest_minute_position(minute);
-    let sec_pos = clock::nearest_second_position(second);
-
-    let pi_display = format!("({}:{}:{})π = {}", hour_frac.plain(), min_frac.plain(), sec_frac.plain(), pi_frac);
-
-    // === Электронные часы ===
-    println!("╔══════════════════════════════════════╗");
-    println!("║         π-ЧАСЫ (электронные)         ║");
-    println!("╠══════════════════════════════════════╣");
-    println!("║                                      ║");
-    println!("║   Время: {:02}:{:02}:{:02}                     ║", hour, minute, second);
-    println!("║   π-время: {:<28}║", pi_display);
-    println!("║                                      ║");
-    println!("╚══════════════════════════════════════╝");
-    println!();
-
-    // === Круговые часы ===
-    println!("╔══════════════════════════════════════════════╗");
-    println!("║            π-ЧАСЫ (круговые)                ║");
-    println!("╠══════════════════════════════════════════════╣");
-    println!("║  * часовая  + минутная  . секундная         ║");
-    println!("╠══════════════════════════════════════════════╣");
-    println!();
-    print!("{}", display::render_circular_clock(hour_pos, min_pos, sec_pos, &pi_frac));
-    println!("╚══════════════════════════════════════════════╝");
-    println!();
-    println!("  Ctrl+C для выхода");
-}
+Клавиши TUI: q / Esc — выход, c — цвет, ? — справка.
+Для команды tray соберите приложение с feature tray-app.
+"#;
 
 fn main() {
-    // Очищаем экран один раз при запуске
-    print!("\x1b[2J");
+    let args: Vec<String> = env::args().skip(1).collect();
+    let result = match args.as_slice() {
+        [] => {
+            pi_clock::tui::run();
+            Ok(())
+        }
+        [arg] if arg == "tui" => {
+            pi_clock::tui::run();
+            Ok(())
+        }
+        [arg] if matches!(arg.as_str(), "help" | "--help" | "-h") => {
+            print!("{HELP}");
+            Ok(())
+        }
+        [arg] if matches!(arg.as_str(), "version" | "--version" | "-V") => {
+            println!("pi-clock {}", env!("CARGO_PKG_VERSION"));
+            Ok(())
+        }
+        [arg] if arg == "tray" => run_tray(),
+        [arg] if arg == "install" => install(None),
+        [command, flag, dir] if command == "install" && flag == "--path" => {
+            install(Some(PathBuf::from(dir.as_str())))
+        }
+        _ => Err(format!("Неизвестная команда или аргументы: {}\n\n{HELP}", args.join(" "))),
+    };
 
-    loop {
-        let (hour, minute, second) = get_local_time();
-
-        // Перемещаем курсор в верхний левый угол и перерисовываем
-        print!("\x1b[H");
-        draw(hour, minute, second);
-
-        // Спим до начала следующей секунды
-        let now = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap();
-        let ms_to_next = 1000 - (now.subsec_millis() as u64);
-        std::thread::sleep(std::time::Duration::from_millis(ms_to_next));
+    if let Err(error) = result {
+        eprintln!("pi-clock: {error}");
+        process::exit(2);
     }
+}
+
+#[cfg(feature = "tray-app")]
+fn run_tray() -> Result<(), String> {
+    pi_clock::tray::run().map_err(|error| format!("ошибка приложения в трее: {error}"))
+}
+
+#[cfg(not(feature = "tray-app"))]
+fn run_tray() -> Result<(), String> {
+    Err("команда tray не включена в эту сборку; пересоберите с --features tray-app".into())
+}
+
+fn install(path: Option<PathBuf>) -> Result<(), String> {
+    let destination_dir = match path {
+        Some(path) => path,
+        None => default_install_dir()?,
+    };
+    fs::create_dir_all(&destination_dir)
+        .map_err(|error| format!("не удалось создать {}: {error}", destination_dir.display()))?;
+
+    let source = env::current_exe().map_err(|error| format!("не удалось определить путь бинарника: {error}"))?;
+    let file_name = source
+        .file_name()
+        .ok_or_else(|| "у исполняемого файла нет имени".to_string())?;
+    let destination = destination_dir.join(file_name);
+    if destination.exists()
+        && source.canonicalize().ok() == destination.canonicalize().ok()
+    {
+        println!("pi-clock уже установлен: {}", destination.display());
+        return Ok(());
+    }
+
+    fs::copy(&source, &destination)
+        .map_err(|error| format!("не удалось установить в {}: {error}", destination.display()))?;
+    println!("Установлено: {}", destination.display());
+    Ok(())
+}
+
+#[cfg(windows)]
+fn default_install_dir() -> Result<PathBuf, String> {
+    env::var_os("LOCALAPPDATA")
+        .map(PathBuf::from)
+        .map(|path| path.join("Programs").join("pi-clock"))
+        .ok_or_else(|| "переменная LOCALAPPDATA не задана".to_string())
+}
+
+#[cfg(not(windows))]
+fn default_install_dir() -> Result<PathBuf, String> {
+    env::var_os("HOME")
+        .map(PathBuf::from)
+        .map(|path| path.join(".local").join("bin"))
+        .ok_or_else(|| "переменная HOME не задана".to_string())
 }

@@ -2,6 +2,8 @@
 name = "pi-clock"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.85"
+autobins = false
 description = "Terminal clock that displays time as π fractions"
 license = "MIT"
 repository = "https://github.com/rudolf1517/pi-clock"
@@ -16,13 +18,13 @@ path = "src/lib.rs"
 name = "pi-clock"
 path = "src/main.rs"
 
-[[bin]]
-name = "tray"
-path = "src/bin/tray.rs"
+[features]
+default = []
+tray-app = ["dep:eframe", "dep:tray-icon"]
 
 [dependencies]
 eframe = { version = "0.30", default-features = false, features = [
     "default_fonts",
     "glow",
-] }
-tray-icon = "0.19"
+], optional = true }
+tray-icon = { version = "0.19", optional = true }
