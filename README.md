@@ -34,6 +34,31 @@ irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.ps1 | i
 
 The scripts install to `~/.local/bin` on Linux/macOS and `%LOCALAPPDATA%\Programs\pi-clock` on Windows. Set `PI_CLOCK_VERSION` (for example `0.1.0`, without the `v` prefix) to pin a release or `PI_CLOCK_INSTALL_DIR` to choose another destination. If no matching release asset exists, the Unix script builds from source when Cargo is installed; the Windows script does the same. Otherwise, see the [releases page](https://github.com/RUdolf1517/pi-clock/releases).
 
+### Package managers
+
+**Homebrew** (third-party tap):
+
+```bash
+brew tap RUdolf1517/pi-clock https://github.com/RUdolf1517/pi-clock
+brew install RUdolf1517/pi-clock/pi-clock
+```
+
+**Debian / Ubuntu** (x86_64; use `pi-clock_arm64.deb` on ARM64):
+
+```bash
+curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clock_amd64.deb
+sudo apt install ./pi-clock_amd64.deb
+```
+
+**Fedora** (x86_64; use `pi-clock.aarch64.rpm` on ARM64):
+
+```bash
+curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clock.x86_64.rpm
+sudo dnf install ./pi-clock.x86_64.rpm
+```
+
+**Windows winget:** `winget install -e --id RUdolf1517.pi-clock` once the manifest is accepted into the community source. Until then, clone this repo, enable `winget settings --enable LocalManifestFiles` once in an elevated terminal, then run `winget install --manifest .\packaging\winget\0.1.2`.
+
 Release binaries: Linux x86_64/aarch64 (TUI), macOS Apple Silicon/Intel (TUI + tray), Windows x64 (TUI + tray). The Linux release intentionally avoids GUI system-library dependencies; to build the tray there, compile with `--features tray-app`.
 
 ### CLI commands
@@ -61,7 +86,7 @@ In the TUI, press `q` or `Esc` to quit (`Ctrl+C` also works on Unix), `c` to tog
 
 ### Versioning and releases
 
-`Cargo.toml` is the source of truth for the SemVer version (`MAJOR.MINOR.PATCH`); `pi-clock version` prints it. Record changes in `CHANGELOG.md`. Update the package version and changelog, then push a matching `vX.Y.Z` tag. The release workflow verifies the tag, builds platform archives and SHA-256 checksums, and creates a GitHub release.
+`Cargo.toml` is the source of truth for the SemVer version (`MAJOR.MINOR.PATCH`); `pi-clock version` prints it. Record changes in `CHANGELOG.md`. After merging a version bump, push the matching `vX.Y.Z` tag. Release automation verifies the tag, builds platform archives and SHA-256 checksums, and creates `.deb` / `.rpm` packages. Homebrew formula checksums and the versioned winget manifest are updated after each release. See [`RELEASE.md`](RELEASE.md) for the full package-manager release checklist.
 
 ### Tests and CI
 
@@ -121,6 +146,31 @@ irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.ps1 | i
 
 Скрипты устанавливают приложение в `~/.local/bin` (Linux/macOS) и `%LOCALAPPDATA%\Programs\pi-clock` (Windows). Переменная `PI_CLOCK_VERSION` (например, `0.1.0`, без префикса `v`) позволяет выбрать версию, а `PI_CLOCK_INSTALL_DIR` — каталог установки. Если подходящего релизного бинарника нет, скрипты соберут его из исходников при наличии Cargo; иначе откройте [страницу релизов](https://github.com/RUdolf1517/pi-clock/releases).
 
+### Пакетные менеджеры
+
+**Homebrew** (сторонний tap):
+
+```bash
+brew tap RUdolf1517/pi-clock https://github.com/RUdolf1517/pi-clock
+brew install RUdolf1517/pi-clock/pi-clock
+```
+
+**Debian / Ubuntu** (x86_64; для ARM64 скачайте `pi-clock_arm64.deb`):
+
+```bash
+curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clock_amd64.deb
+sudo apt install ./pi-clock_amd64.deb
+```
+
+**Fedora** (x86_64; для ARM64 скачайте `pi-clock.aarch64.rpm`):
+
+```bash
+curl -fLO https://github.com/RUdolf1517/pi-clock/releases/latest/download/pi-clock.x86_64.rpm
+sudo dnf install ./pi-clock.x86_64.rpm
+```
+
+**Windows winget:** после публикации манифеста в community source: `winget install -e --id RUdolf1517.pi-clock`. Пока манифест не принят, клонируйте репозиторий, один раз включите `winget settings --enable LocalManifestFiles` в терминале администратора и установите локально: `winget install --manifest .\packaging\winget\0.1.2`.
+
 Готовые сборки: Linux x86_64/aarch64 (TUI), macOS Apple Silicon/Intel (TUI + трей), Windows x64 (TUI + трей). В Linux-сборке нет GUI-зависимостей; чтобы собрать там трей, используйте feature `tray-app`.
 
 ### Команды CLI
@@ -148,7 +198,7 @@ cargo run --bin pi-clock -- help
 
 ### Версии и релизы
 
-Единственный источник версии SemVer (`MAJOR.MINOR.PATCH`) — поле `version` в `Cargo.toml`; её показывает `pi-clock version`. Изменения фиксируются в `CHANGELOG.md`. Обновите версию и changelog, затем отправьте тег `vX.Y.Z`. Release workflow проверит соответствие версии, соберёт архивы и SHA-256, затем создаст GitHub Release.
+Единственный источник версии SemVer (`MAJOR.MINOR.PATCH`) — поле `version` в `Cargo.toml`; её показывает `pi-clock version`. Изменения фиксируются в `CHANGELOG.md`. После слияния обновлённой версии отправьте соответствующий тег `vX.Y.Z`. Release workflow проверит версию тега, соберёт архивы, SHA-256, пакеты `.deb` / `.rpm` и опубликует GitHub Release. После релиза обновляются SHA-256 в Homebrew formula и versioned winget manifest. Полная инструкция — в [`RELEASE.md`](RELEASE.md).
 
 ### Тесты и CI
 
