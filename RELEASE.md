@@ -61,7 +61,7 @@ Until then, install the local manifest from a clone of this repository (enable `
 ```powershell
 git clone https://github.com/RUdolf1517/pi-clock
 winget settings --enable LocalManifestFiles
-winget install --manifest .\packaging\winget\0.1.2
+winget install --manifest .\packaging\winget\0.1.3
 ```
 
 ### Cargo
@@ -69,7 +69,7 @@ winget install --manifest .\packaging\winget\0.1.2
 Cargo users can install directly from the Git repository without a prebuilt binary:
 
 ```sh
-cargo install --git https://github.com/RUdolf1517/pi-clock --tag v0.1.2
+cargo install --git https://github.com/RUdolf1517/pi-clock --tag v0.1.3
 ```
 
 On macOS, add `--features tray-app` if the tray application should be included.
