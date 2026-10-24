@@ -46,7 +46,8 @@ version: $VERSION
 release: "1"
 section: utils
 priority: optional
-maintainer: RUdolf1517
+maintainer: RUdolf1517 <rudolfzinovev@protonmail.com>
+vendor: RUdolf1517
 description: Terminal clock that displays time as rational multiples of pi
 homepage: https://github.com/RUdolf1517/pi-clock
 license: MIT

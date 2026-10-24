@@ -115,7 +115,7 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ github.ref_name }}
-        run: bash packaging/linux-packages.sh "${RELEASE_VERSION#v}" release-assets
+        run: bash -x packaging/linux-packages.sh "${RELEASE_VERSION#v}" release-assets
       - name: Create SHA-256 sums
         shell: bash
         run: |
