@@ -1,9 +1,9 @@
 #!/bin/sh
-# One-line binary install: curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/main/install.sh | sh
+# One-line binary install: curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.sh | sh
 set -eu
 
 REPO=${PI_CLOCK_REPO:-RUdolf1517/pi-clock}
-BRANCH=${PI_CLOCK_BRANCH:-main}
+BRANCH=${PI_CLOCK_BRANCH:-master}
 VERSION=${PI_CLOCK_VERSION:-}
 INSTALL_DIR=${PI_CLOCK_INSTALL_DIR:-"$HOME/.local/bin"}
 
