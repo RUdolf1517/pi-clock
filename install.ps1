@@ -2,7 +2,7 @@
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $Repo = if ($env:PI_CLOCK_REPO) { $env:PI_CLOCK_REPO } else { 'RUdolf1517/pi-clock' }
-$Branch = if ($env:PI_CLOCK_BRANCH) { $env:PI_CLOCK_BRANCH } else { 'main' }
+$Branch = if ($env:PI_CLOCK_BRANCH) { $env:PI_CLOCK_BRANCH } else { 'master' }
 $InstallDir = if ($env:PI_CLOCK_INSTALL_DIR) { $env:PI_CLOCK_INSTALL_DIR } else { Join-Path $env:LOCALAPPDATA 'Programs\pi-clock' }
 $Version = $env:PI_CLOCK_VERSION
 $Target = 'x86_64-pc-windows-msvc'

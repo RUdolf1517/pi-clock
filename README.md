@@ -23,13 +23,13 @@ Example at 03:30:45:
 **Linux / macOS** — downloads and verifies the latest prebuilt release; no Rust needed:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.sh | sh
 ```
 
 **Windows PowerShell** — x64 release:
 
 ```powershell
-irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.ps1 | iex
 ```
 
 The scripts install to `~/.local/bin` on Linux/macOS and `%LOCALAPPDATA%\Programs\pi-clock` on Windows. Set `PI_CLOCK_VERSION` (for example `0.1.0`, without the `v` prefix) to pin a release or `PI_CLOCK_INSTALL_DIR` to choose another destination. If no matching release asset exists, the Unix script builds from source when Cargo is installed; the Windows script does the same. Otherwise, see the [releases page](https://github.com/RUdolf1517/pi-clock/releases).
@@ -106,13 +106,13 @@ CLI-часы на Rust, которые показывают локальное �
 **Linux / macOS** — скачивает последнюю готовую сборку и проверяет SHA-256; Rust не нужен:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.sh | sh
 ```
 
 **Windows PowerShell** — готовая сборка для x64:
 
 ```powershell
-irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/RUdolf1517/pi-clock/master/install.ps1 | iex
 ```
 
 Скрипты устанавливают приложение в `~/.local/bin` (Linux/macOS) и `%LOCALAPPDATA%\Programs\pi-clock` (Windows). Переменная `PI_CLOCK_VERSION` (например, `0.1.0`, без префикса `v`) позволяет выбрать версию, а `PI_CLOCK_INSTALL_DIR` — каталог установки. Если подходящего релизного бинарника нет, скрипты соберут его из исходников при наличии Cargo; иначе откройте [страницу релизов](https://github.com/RUdolf1517/pi-clock/releases).
