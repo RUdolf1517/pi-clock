@@ -1,7 +1,7 @@
 //! Интерактивный полноэкранный интерфейс терминала.
 
 use crate::{clock, display};
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 #[cfg(not(unix))]
 use std::io::BufRead;
 #[cfg(unix)]
@@ -22,14 +22,30 @@ impl Terminal {
     fn enter() -> io::Result<Self> {
         #[cfg(unix)]
         {
-            use std::process::Command;
-            let saved = Command::new("stty").arg("-g").output()?;
+            use std::process::{Command, Stdio};
+            if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
+                return Err(io::Error::new(
+                    io::ErrorKind::NotConnected,
+                    "запустите pi-clock в интерактивном терминале (не через pipe)",
+                ));
+            }
+            // Явно наследуем stdin: stty должен видеть управляющий TTY, даже
+            // когда stdout процесса захватывается для чтения исходных настроек.
+            let saved = Command::new("stty")
+                .arg("-g")
+                .stdin(Stdio::inherit())
+                .output()?;
             if !saved.status.success() {
-                return Err(io::Error::new(io::ErrorKind::NotConnected, "Нужен интерактивный терминал"));
+                let detail = String::from_utf8_lossy(&saved.stderr).trim().to_string();
+                return Err(io::Error::new(
+                    io::ErrorKind::NotConnected,
+                    format!("не удалось прочитать настройки TTY через stty: {detail}"),
+                ));
             }
             let saved_stty = String::from_utf8_lossy(&saved.stdout).trim().to_string();
             let status = Command::new("stty")
                 .args(["-echo", "-icanon", "-isig", "min", "0", "time", "1"])
+                .stdin(Stdio::inherit())
                 .status()?;
             if !status.success() {
                 return Err(io::Error::other("Не удалось переключить терминал в режим клавиш"));
